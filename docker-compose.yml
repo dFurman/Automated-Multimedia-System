@@ -1,0 +1,122 @@
+version: "3"
+services:
+  radarr:
+    container_name: radarr
+    image: linuxserver/radarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=TZ=Asia/Jerusalem
+      - UMASK_SET=022 #optional
+    volumes:
+      - ./radarr/config:/config
+      - ${SHARE_LOCATION}/downloads/movies:/movies
+      - ${SHARE_LOCATION}/downloads:/downloads
+    ports:
+      - 7878:7878
+    restart: unless-stopped
+  
+  radarr-addar:
+    container_name: radarr-addar
+    build: ./radarr-addar/.
+    image: furman/radarr-addar
+    environment:
+      - RADARR_API_KEY=${RADARR_API_KEY}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - MANAGER_ID=${MANAGER_ID}
+      - MANAGER_USERNAME=${MANAGER_USERNAME}
+      - GF_USERNAME=${GF_USERNAME}
+      - RADARR_IP=${RADARR_IP}
+    restart: unless-stopped
+  
+  sonarr:
+    image: linuxserver/sonarr
+    container_name: sonarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Jerusalem
+      - UMASK_SET=022 #optional
+    volumes:
+      - ./sonarr/config:/config
+      - ${SHARE_LOCATION}/downloads/tv:/tv
+      - ${SHARE_LOCATION}/downloads:/downloads
+    ports:
+      - 8989:8989
+    restart: unless-stopped
+
+  deluge:
+    image: linuxserver/deluge
+    container_name: deluge
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Jerusalem
+      - UMASK_SET=022 #optional
+      - DELUGE_LOGLEVEL=error #optional
+    volumes:
+      - ./deluge/config:/config
+      - ${SHARE_LOCATION}/downloads:/downloads
+      - ${SHARE_LOCATION}/torrents_to_download:/torrents_to_download
+    ports:
+      - 8112:8112
+    restart: unless-stopped
+
+  jackett:
+    image: linuxserver/jackett
+    container_name: jackett
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Jerusalem
+      - RUN_OPTS=run options here #optional
+    volumes:
+      - ./jackett/config:/config
+      - ${SHARE_LOCATION}/torrents_to_download:/downloads
+    ports:
+      - 9117:9117
+    restart: unless-stopped
+
+  bazarr:
+    image: linuxserver/bazarr
+    container_name: bazarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Jerusalem
+      - UMASK_SET=022 #optional
+    volumes:
+      - ./bazarr/config:/config
+      - ${SHARE_LOCATION}/downloads/movies:/movies
+      - ${SHARE_LOCATION}/downloads/tv:/tv
+    ports:
+      - 6767:6767
+    restart: unless-stopped
+
+  nzbget:
+    image: linuxserver/nzbget
+    container_name: nzbget
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Jerusalem
+    volumes:
+      - ./nzbget/config:/config
+      - ${SHARE_LOCATION}/downloads:/downloads
+    ports:
+      - 6789:6789
+    restart: unless-stopped
+    
+  hydra2:
+    image: linuxserver/hydra2
+    container_name: hydra2
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Jerusalem
+    volumes:
+      - ./hydra2/config:/config
+      - ${SHARE_LOCATION}/downloads:/downloads
+    ports:
+      - 5076:5076
+    restart: unless-stopped
