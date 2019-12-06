@@ -1,4 +1,5 @@
 from radarr import Radarr
+from sonarr import Sonarr
 import telegram
 from telegram import (ReplyKeyboardRemove, InlineKeyboardButton, InlineKeyboardMarkup)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
@@ -9,30 +10,82 @@ import os
 
 
 raddarApiKey = os.environ.get('RADARR_API_KEY')
+raddarApiKey = os.environ.get('SONARR_API_KEY')
 telegram_bot_token = os.environ.get('TELEGRAM_BOT_TOKEN')
 raddar = Radarr(raddarApiKey)
+sonarr = Sonarr(sonarrApiKey)
+seasons_to_add_global = {}
 manager_id = int(os.environ.get('MANAGER_ID'))  # Telegram manager id
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-MovieName = range(1)
+Movies, Series = range(2)
 
 def start(update, context):
+    button_list = [
+        [InlineKeyboardButton("Movies", callback_data=f"MOVIES"),
+         InlineKeyboardButton("TV Series", callback_data=f"TV_SERIES")]
+    ]
+    reply_markup = InlineKeyboardMarkup(button_list)
     user = update.message.from_user
     logger.info(f"{user.first_name} Started a conversation.")
-    if user.username == os.environ.get('MANAGER_USERNAME'):  # Manager Username
-        update.message.reply_text(f'Welcome My King, what movie would you like to search ?')
-        return MovieName
-    elif user.username == os.environ.get('GF_USERNAME'):  # Manager's GF Username
-        update.message.reply_text(f'Welcome My Queen, what movie would you like to search ?')
-        return MovieName
+    if user.username == "Putaaa":  # Manager Username
+        update.message.reply_text(f'Welcome My King, what would you like to search ?', reply_markup=reply_markup)
+        # return Movies
+    elif user.username == "NULL":  # Manager's GF Username
+        update.message.reply_text(f'Welcome My Queen, what would you like to search ?', reply_markup=reply_markup)
+        # return Movies
     else:  # Unauthorized Access will be blocked
         logger.info(f"User {user.username} just tried to start a conversation but failed")
         update.message.reply_text(f"Who are you ? I don't know you!")
 
+def search_movies(update, context):
+    bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+    user = update.message.from_user
+    logger.info(f"{user.first_name} Requested to search the Movie: {update.message.text}.")
+    movies = raddar.get_movies(update.message.text)
+    max_movies = 10  # Radarr returns maximum 20 movies but I want to see first 10 if there are more.
+    num_movies = len(movies)
+    if num_movies > max_movies:
+        update.message.reply_text(f"Found {num_movies} Movies but showing you newest {max_movies}:")
+    else:
+        update.message.reply_text(f"Found {num_movies} Movies:")
+    movies.sort(key=lambda x: x['year'], reverse=True)
+    list_movies(update.message.chat_id, movies[:max_movies])
 
-def show_movies(chat_id, movies):  # Show the list of movies with Add and More Info buttons
+    if num_movies > max_movies:
+        button_list = [
+            [InlineKeyboardButton("Show All", callback_data=f"SHOWALL_{update.message.text}_{max_movies}")]
+        ]
+        reply_markup = InlineKeyboardMarkup(button_list)
+        bot.send_message(chat_id=update.message.chat_id,
+                         text=f"Show All Movies ?", reply_markup=reply_markup)
+    return Movies
+
+def search_series(update, context):
+    bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
+    user = update.message.from_user
+    logger.info(f"{user.first_name} Requested to search the Series: {update.message.text}.")
+    all_series = sonarr.get_all_series(update.message.text)
+    max_series = 5  # Radarr returns maximum 20 movies but I want to see first 10 if there are more.
+    num_series = len(all_series)
+    if num_series > max_series:
+        update.message.reply_text(f"Found {num_series} TV Shows but showing you only {max_series}:")
+    else:
+        update.message.reply_text(f"Found {num_series} TV Shows:")
+    list_series(update.message.chat_id, all_series[:max_series])
+
+    if num_series > max_series:
+        button_list = [
+            [InlineKeyboardButton("Show All", callback_data=f"SHOWALL_{update.message.text}_{max_series}")]
+        ]
+        reply_markup = InlineKeyboardMarkup(button_list)
+        bot.send_message(chat_id=update.message.chat_id,
+                         text=f"Show All TV Shows ?", reply_markup=reply_markup)
+    return Series
+
+def list_movies(chat_id, movies):  # Show the list of movies with Add and More Info buttons
     for movie in movies:
         bot.send_chat_action(chat_id=chat_id, action=telegram.ChatAction.TYPING)
         button_list = [
@@ -44,8 +97,21 @@ def show_movies(chat_id, movies):  # Show the list of movies with Add and More I
         bot.send_photo(chat_id=chat_id, photo=photo_url,
                        caption=f"{movie['title']} ({movie['year']})", reply_markup=reply_markup)
 
+def list_series(chat_id, series_list):
+    for series in series_list:
+        bot.send_chat_action(chat_id=chat_id, action=telegram.ChatAction.TYPING)
+        button_list = [
+            [InlineKeyboardButton("Add to Sonarr", callback_data=f"ADD_{series['tvdbId']}"),
+             InlineKeyboardButton("More Info...", callback_data=f"MORE_{series['tvdbId']}")]
+        ]
+        reply_markup = InlineKeyboardMarkup(button_list)
+        posters = list(filter(lambda x: x['coverType'] == 'poster', series['images']))
+        photo_url = posters[0]['url'] if len(posters) > 0 else open("poster-dark.png", "rb")
+        bot.send_photo(chat_id=chat_id, photo=photo_url,
+                       caption=f"{series['title']} ({series['year']})", reply_markup=reply_markup)
 
-def show_more_info(update, movie):  # Show more info about a movie
+
+def show_more_movie_info(update, movie):  # Show more info about a movie
     bot.send_chat_action(chat_id=update.callback_query.message.chat_id, action=telegram.ChatAction.TYPING)
     button_list = [
         [InlineKeyboardButton("Add to Radarr", callback_data=f"ADD_{movie['tmdbId']}")]
@@ -67,6 +133,29 @@ Trailer: {'https://www.youtube.com/watch?v=' + movie['youTubeTrailerId'] if 'you
 
 IMDb: {str(_imdb.data['rating']) + '/10' if _imdb and 'rating' in _imdb.data else 'NULL'}
                                    """)
+
+def show_more_series_info(update, series):  # Show more info about a movie
+    bot.send_chat_action(chat_id=update.callback_query.message.chat_id, action=telegram.ChatAction.TYPING)
+    button_list = [
+        [InlineKeyboardButton("Add to Sonarr", callback_data=f"ADD_{series['tvdbId']}")]
+    ]
+    reply_markup = InlineKeyboardMarkup(button_list)
+
+    try:
+        _imdb = imdb.get_movie(series['imdbId'].lstrip("tt")) if 'imdbId' in series else None
+    except:
+        _imdb = None
+    # photo_url = movie['images'][0]['url'] if movie['images'][0]['url'] != "http://image.tmdb.org/t/p/original" else open("poster-dark.png", "rb")
+    bot.edit_message_caption(message_id=update.callback_query.message.message_id,
+                             chat_id=update.callback_query.message.chat_id,
+                             reply_markup=reply_markup,
+                             caption=f"""Title: {series['title']} ({series['year']}).
+Seasons: {series['seasonCount']}
+Network: {series['network']}
+IMDb: {str(_imdb.data['rating']) + '/10' if _imdb and 'rating' in _imdb.data else 'NULL'}
+
+Overview: {series['overview']}
+""")
 
 # if other user than manager tries to add a movie, send the request to the manager to
 # approve and notify the user upon approval
@@ -102,28 +191,28 @@ def add_movie_to_radarr(movie, update):
 
 {added_text}""")
 
-def movie_name(update, context):
-    bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-    user = update.message.from_user
-    logger.info(f"{user.first_name} Requested to search the Movie: {update.message.text}.")
-    movies = raddar.get_movies(update.message.text)
-    max_movies = 10  # Radarr returns maximum 20 movies but I want to see first 10 if there are more.
-    num_movies = len(movies)
-    if num_movies > max_movies:
-        update.message.reply_text(f"Found {num_movies} Movies but showing you newest {max_movies}:")
-    else:
-        update.message.reply_text(f"Found {num_movies} Movies:")
-    movies.sort(key=lambda x: x['year'], reverse=True)
-    show_movies(update.message.chat_id, movies[:max_movies])
+def add_season_to_list(season_number, tvdbId):
+    seasons_to_add_global[int(tvdbId)][int(season_number)]['monitored'] = True
 
-    if num_movies > max_movies:
-        button_list = [
-            [InlineKeyboardButton("Show All", callback_data=f"SHOWALL_{update.message.text}_{max_movies}")]
-        ]
-        reply_markup = InlineKeyboardMarkup(button_list)
-        bot.send_message(chat_id=update.message.chat_id,
-                         text=f"Show All Movies ?", reply_markup=reply_markup)
-    return MovieName
+def add_series_to_sonarr(series, update):
+    seasons_to_add = []
+    for i in range(series['seasonCount']+1):
+        seasons_to_add.append({"seasonNumber": i, "monitored": False})
+    seasons_to_add_global[series['tvdbId']] = seasons_to_add
+    button_list = []
+    for i in range(1,series['seasonCount']+1):
+        button_list.append([InlineKeyboardButton(f"Add Season {i}", callback_data=f"ADDSEASON_{i}_{series['tvdbId']}")])
+
+    button_list.append([InlineKeyboardButton(f"Done !", callback_data=f"ADDSERIES_{series['tvdbId']}")])
+    reply_markup = InlineKeyboardMarkup(button_list)
+
+    chat_id = update.callback_query.message.chat_id
+    bot.edit_message_caption(message_id=update.callback_query.message.message_id,
+                             chat_id=chat_id,
+                             reply_markup=reply_markup,
+                             caption=f"""{update.callback_query.message.caption}
+
+Please Select Seasons to Add:""")
 
 def error(update, context):
     logger.warning('Update "%s" caused error "%s"', update, context.error)
@@ -135,8 +224,61 @@ def cancel(update, context):
                               reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
+def select_source_query_handler(update, context):
+    bot.send_message(chat_id=update.callback_query.message.chat_id,
+                     text=f"Awesome, now enter what do you want to search:")
+    cqd = update.callback_query.data
+    if cqd == "MOVIES":
+        return Movies
+    elif cqd == "TV_SERIES":
+        return Series
+    else:
+        return cancel(update,context)
 
-def callback_query_handler(update, context):
+def series_callback_query_handler(update, context):
+    bot.send_chat_action(chat_id=update.callback_query.message.chat_id, action=telegram.ChatAction.TYPING)
+    cqd = update.callback_query.data
+    user = update.callback_query.from_user
+    split = cqd.split("_")
+    action = split[0]
+    tvdbId = data = split[1]
+    if action == 'ADD':
+        series = sonarr.get_series(tvdbId)[0]
+        if user.id != manager_id:
+            bot.send_message(chat_id=update.callback_query.message.chat_id,
+                             text=f"Great, I'll let the King know you want to add this series :)")
+            send_movie_to_manager(series, user)
+        else:
+            add_series_to_sonarr(series, update)
+
+    elif action == 'MORE':
+        series = sonarr.get_series(tvdbId)[0]
+        logger.info(f"The User {user.first_name} requested to see more details about the Series {series['title']}")
+        show_more_series_info(update, series)
+
+    elif action == 'ADDSEASON':
+        add_season_to_list(data, split[2])
+
+    elif action == 'ADDSERIES':
+        series = sonarr.get_series(tvdbId)[0]
+        response = sonarr.add_series(tvdbId, seasons_to_add_global[int(tvdbId)])
+        if response == 'OK':
+            added_text = f"Excellent Choice! Adding {series['title']} to your collection."
+        elif response == 'EXISTS':
+            added_text = f"Just so you know.. {series['title']} is already exists in your collection :)"
+        elif response == 'UNKNOWN':
+            added_text = f"I'm sorry to tell you that something went wrong while trying to add the Series and I don't know what :\\"
+        bot.edit_message_caption(message_id=update.callback_query.message.message_id, chat_id=update.callback_query.message.chat_id,
+                                 caption=added_text)
+
+    elif action == 'ACCEPT':
+        series = sonarr.get_series(tvdbId)[0]
+        user_to_notify = split[2]
+        bot.send_message(chat_id=user_to_notify,
+                         text=f"Congratulations! The King has approved your request for the TV Show: {series['title']}")
+        sonarr.add_series(tvdbId, seasons_to_add_global[int(tvdbId)])
+
+def movies_callback_query_handler(update, context):
     bot.send_chat_action(chat_id=update.callback_query.message.chat_id, action=telegram.ChatAction.TYPING)
     cqd = update.callback_query.data
     user = update.callback_query.from_user
@@ -154,7 +296,7 @@ def callback_query_handler(update, context):
 
     elif action == 'MORE':
         logger.info(f"The User {user.first_name} requested to see more details about the movie {movie['title']}")
-        show_more_info(update, movie)
+        show_more_movie_info(update, movie)
 
     elif action == 'ACCEPT':
         user_to_notify = split[2]
@@ -167,9 +309,9 @@ def callback_query_handler(update, context):
         max_movies = int(split[2])
         movies = raddar.get_movies(data)
         movies.sort(key=lambda x: x['year'], reverse=True)
-        show_movies(update.callback_query.message.chat_id, movies[max_movies:])
+        list_movies(update.callback_query.message.chat_id, movies[max_movies:])
 
-    return MovieName
+    return Movies
 
 def main():
     # Create the Updater and pass it your bot's token.
@@ -181,12 +323,17 @@ def main():
 
     # Add conversation handler with the states
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler('start', start)],
+        entry_points=[CommandHandler('start', start),
+                      CallbackQueryHandler(select_source_query_handler)],
 
         states={
-            MovieName: [MessageHandler(Filters.text, movie_name),
-                        CallbackQueryHandler(callback_query_handler),
-                        CommandHandler('start', start)]
+            Movies: [MessageHandler(Filters.text, search_movies),
+                     CallbackQueryHandler(movies_callback_query_handler),
+                     # CommandHandler('start', start)
+                     ],
+            Series: [MessageHandler(Filters.text, search_series),
+                     CallbackQueryHandler(series_callback_query_handler),
+            ]
         },
         fallbacks=[CommandHandler('cancel', cancel)]
     )
