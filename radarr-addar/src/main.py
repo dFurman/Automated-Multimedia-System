@@ -9,10 +9,10 @@ from imdb import IMDb
 import os
 
 
-raddarApiKey = os.environ.get('RADARR_API_KEY')
-raddarApiKey = os.environ.get('SONARR_API_KEY')
+radarrApiKey = os.environ.get('RADARR_API_KEY')
+sonarrApiKey = os.environ.get('SONARR_API_KEY')
 telegram_bot_token = os.environ.get('TELEGRAM_BOT_TOKEN')
-raddar = Radarr(raddarApiKey)
+raddar = Radarr(radarrApiKey)
 sonarr = Sonarr(sonarrApiKey)
 seasons_to_add_global = {}
 manager_id = int(os.environ.get('MANAGER_ID'))  # Telegram manager id
