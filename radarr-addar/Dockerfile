@@ -1,6 +1,6 @@
 FROM python
-COPY ./src/requirements.txt /app/requirements.txt
-RUN pip install -r requirements.txt
-COPY ./src/* /app/
 WORKDIR /app
+COPY ./src/requirements.txt ./requirements.txt
+RUN pip install -r requirements.txt
+COPY ./src/* ./
 CMD python ./main.py
