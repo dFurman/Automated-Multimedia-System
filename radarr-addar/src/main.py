@@ -216,7 +216,7 @@ def update_series_button_list(tvdbId):
 
 def edit_series_message_with_new_button_list(message, new_button_list, tvdbId):
     new_button_list.append([InlineKeyboardButton(f"Done !", callback_data=f"ADDSERIES_{tvdbId}")])
-    new_button_list.append([InlineKeyboardButton(f"Cancel", callback_data=f"CANCEL_MSG")])
+    new_button_list.append([InlineKeyboardButton(f"Cancel", callback_data=f"CANCEL_1")])
     reply_markup = InlineKeyboardMarkup(new_button_list)
 
     bot.edit_message_caption(message_id=message.message_id,
