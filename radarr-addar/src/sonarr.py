@@ -1,6 +1,5 @@
 import requests
 import json
-import os
 
 class Sonarr:
     def __init__(self, apiKey):
@@ -14,6 +13,10 @@ class Sonarr:
 
     def get_series(self, tvdbId):
         r = requests.get(f"http://{self.sonarrIP}:8989/api/series/lookup?term=tvdb:{tvdbId}&apikey={self.apiKey}")
+        return r.json()
+
+    def get_collection(self):
+        r = requests.get(f"http://{self.sonarrIP}:8989/api/series?apikey={self.apiKey}")
         return r.json()
 
     def add_series(self, tvdbId, seasons):
@@ -35,6 +38,15 @@ class Sonarr:
         if r.status_code in [200, 201, 202]:
             return "OK"
         elif r.status_code == 400:
-            return "EXISTS"
+            my_collection = self.get_collection()
+            for series in my_collection:
+                if series['tvdbId'] == tvdbId:
+                    series_info = series
+                    series_info['seasons'] = seasons
+                    r = requests.put(f"http://{self.sonarrIP}:8989/api/series?apikey={self.apiKey}", json.dumps(series_info))
+                    if r.status_code in [200, 201, 202]:
+                        return "EXISTS"
+
+            return "UNKNOWN"
         else:
             return "UNKNOWN"
