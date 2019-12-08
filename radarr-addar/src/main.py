@@ -216,7 +216,7 @@ def update_series_button_list(tvdbId):
 
 def edit_series_message_with_new_button_list(message, new_button_list, tvdbId):
     new_button_list.append([InlineKeyboardButton(f"Done !", callback_data=f"ADDSERIES_{tvdbId}")])
-    new_button_list.append([InlineKeyboardButton(f"Cancel", callback_data=f"CANCEL")])
+    new_button_list.append([InlineKeyboardButton(f"Cancel", callback_data=f"CANCEL_MSG")])
     reply_markup = InlineKeyboardMarkup(new_button_list)
 
     bot.edit_message_caption(message_id=message.message_id,
@@ -309,7 +309,7 @@ def series_callback_query_handler(update, context):
 
     elif action == 'CANCEL':
         bot.edit_message_caption(message_id=message.message_id, chat_id=message.chat_id,
-                                 caption= "Canceled")
+                                 caption="Canceled")
 
 def movies_callback_query_handler(update, context):
     bot.send_chat_action(chat_id=update.callback_query.message.chat_id, action=telegram.ChatAction.TYPING)
