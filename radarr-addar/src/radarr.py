@@ -1,5 +1,6 @@
 import requests
 import json
+import os 
 
 class Radarr:
     def __init__(self, apiKey):

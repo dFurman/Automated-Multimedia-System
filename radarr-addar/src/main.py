@@ -6,7 +6,7 @@ from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
                           ConversationHandler, CallbackQueryHandler)
 import logging
 from imdb import IMDb
-
+import os 
 
 radarrApiKey = os.environ.get('RADARR_API_KEY')
 sonarrApiKey = os.environ.get('SONARR_API_KEY')

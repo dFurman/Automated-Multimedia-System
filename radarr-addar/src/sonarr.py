@@ -1,5 +1,6 @@
 import requests
 import json
+import os 
 
 class Sonarr:
     def __init__(self, apiKey):
