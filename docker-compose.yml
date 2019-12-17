@@ -21,12 +21,14 @@ services:
     build: ./radarr-addar/.
     image: furman/radarr-addar
     environment:
+      - RADARR_IP=${RADARR_IP}
+      - SONARR_IP=${RADARR_IP}
       - RADARR_API_KEY=${RADARR_API_KEY}
+      - SONARR_API_KEY=${SONARR_API_KEY}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - MANAGER_ID=${MANAGER_ID}
       - MANAGER_USERNAME=${MANAGER_USERNAME}
       - GF_USERNAME=${GF_USERNAME}
-      - RADARR_IP=${RADARR_IP}
     restart: unless-stopped
   
   sonarr:
