@@ -8,6 +8,10 @@ import logging
 from imdb import IMDb
 import os 
 
+if os.path.isfile('.env'):
+    from dotenv import load_dotenv
+    load_dotenv()
+
 radarrApiKey = os.environ.get('RADARR_API_KEY')
 sonarrApiKey = os.environ.get('SONARR_API_KEY')
 telegram_bot_token = os.environ.get('TELEGRAM_BOT_TOKEN')
@@ -227,6 +231,7 @@ def edit_series_message_with_new_button_list(message, new_button_list, tvdbId):
 def add_series_to_sonarr(series, update):
     seasons_to_add = check_if_season_exists(series['tvdbId'])
     if not seasons_to_add:
+        seasons_to_add = []
         for i in range(series['seasonCount']+1):
             seasons_to_add.append({"seasonNumber": i, "monitored": False})
     seasons_to_add_global[series['tvdbId']] = seasons_to_add
@@ -235,6 +240,8 @@ def add_series_to_sonarr(series, update):
 
 def error(update, context):
     logger.warning('Update "%s" caused error "%s"', update, context.error)
+    bot.send_message(chat_id=manager_id,
+                     text=f'Update ${update} caused error "${context.error}"')
 
 def cancel(update, context):
     user = update.message.from_user
@@ -262,7 +269,8 @@ def series_callback_query_handler(update, context):
     split = cqd.split("_")
     action = split[0]
     tvdbId = data = int(split[1])
-    series = sonarr.get_series(tvdbId)[0]
+    if not action == 'CANCEL':
+        series = sonarr.get_series(tvdbId)[0]
     if action == 'ADD':
         if user.id != manager_id:
             bot.send_message(chat_id=message.chat_id,
