@@ -95,20 +95,6 @@ services:
       - 6767:6767
     restart: unless-stopped
 
-  nzbget:
-    image: linuxserver/nzbget
-    container_name: nzbget
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Asia/Jerusalem
-    volumes:
-      - ./nzbget/config:/config
-      - ${SHARE_LOCATION}/downloads:/downloads
-    ports:
-      - 6789:6789
-    restart: unless-stopped
-    
   hydra2:
     image: linuxserver/hydra2
     container_name: hydra2
@@ -121,4 +107,19 @@ services:
       - ${SHARE_LOCATION}/downloads:/downloads
     ports:
       - 5076:5076
+    restart: unless-stopped
+
+  plex:
+    image: linuxserver/plex
+    container_name: plex
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - VERSION=docker
+      - UMASK_SET=022 #optional
+    network_mode: host
+    volumes:
+      - ./plex:/config
+      - ${SHARE_LOCATION}/downloads/tv:/tv
+      - ${SHARE_LOCATION}/downloads/movies:/movies
     restart: unless-stopped
