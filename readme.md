@@ -21,7 +21,8 @@ This stack is built from the following:
 - TIME_ZONE **(your Time Zone in linux format)**
 
 ## Radarr-Adder ?? 
-It all started from Radarr and thus it's called Radarr-Adder but today its compatible also with sonarr (90% compatible)
+It all started from Radarr and thus it's called Radarr-Adder but today its compatible also with sonarr (90% compatible).
+
 While using my Telegram bot to send me notifications from Radarr I decided to make it also search and add movies to my collection in Radarr (and tv-shows in Sonarr)
 
 
