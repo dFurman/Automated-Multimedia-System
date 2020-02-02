@@ -5,6 +5,7 @@ This stack is built from the following:
 - Bazarr (For Subtitles)
 - Deluge (Torrent Client)
 - Jackett (Extended Indexer)
+- NZBHydra (To prioritize indexers)
 - Plex Server
 - Radarr-Adder (Self written telegram bot to add movies and tv shows from remote)
 
