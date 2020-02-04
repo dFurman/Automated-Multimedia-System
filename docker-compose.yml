@@ -16,10 +16,10 @@ services:
       - 7878:7878
     restart: unless-stopped
   
-  radarr-addar:
-    container_name: radarr-addar
-    build: ./radarr-addar/.
-    image: furman/radarr-addar
+  radarr-adder:
+    container_name: radarr-adder
+    build: ./radarr-adder/.
+    image: furman/radarr-adder
     environment:
       - RADARR_IP=${RADARR_IP}
       - SONARR_IP=${RADARR_IP}
