@@ -2,11 +2,11 @@ dist: bionic
 
 services:
   - docker
-
+env:
+  - SHARE_LOCATION=/tmp
+  - TIME_ZONE=Asia/Jerusalem
 before_install:
-- mkdir /tmp/htpc
-- export SHARE_LOCATION=/tmp/htpc
-- export TIME_ZONE=Asia/Jerusalem
+  - mkdir /tmp/htpc
 
 script:
-- chmod +x ./install.sh && ./install.sh
+  - chmod +x ./install.sh && ./install.sh
