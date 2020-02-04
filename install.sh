@@ -10,10 +10,10 @@ do sleep 5
 done
 sleep 10
 # RadarrAPIKey=($(grep -oP '(?<=ApiKey>)[^<]+' "$SHARE_LOCATION/htpc/radarr/config/config.xml"))
-while [[ $(curl -sS localhost:7878 | grep ApiKey | cut -d"'" -f 2) == "" ]]
-do RadarrAPIKey=$(curl -sS localhost:7878 | grep ApiKey | cut -d"'" -f 2)
-done
-echo $radarrAPIKey
+# while [[ $(curl -sS localhost:7878 | grep ApiKey | cut -d"'" -f 2) == "" ]]
+RadarrAPIKey=$(curl -sS localhost:7878 | grep ApiKey | cut -d"'" -f 2)
+# done
+echo $RadarrAPIKey
 
 echo **Get Sonarr APIkey**
 echo "Waiting for Sonarr to be up..."
