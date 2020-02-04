@@ -3,8 +3,9 @@ dist: bionic
 services:
   - docker
 env:
-  - SHARE_LOCATION=/tmp
-  - TIME_ZONE=Asia/Jerusalem
+  global:
+    - SHARE_LOCATION=/tmp
+    - TIME_ZONE=Asia/Jerusalem
 before_install:
   - mkdir /tmp/htpc
 
