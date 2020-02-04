@@ -9,7 +9,7 @@ while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:7878)" != "200" ]
 do sleep 5
 done
 # RadarrAPIKey=($(grep -oP '(?<=ApiKey>)[^<]+' "$SHARE_LOCATION/htpc/radarr/config/config.xml"))
-RadarrAPIKey=(curl localhost:7878 | grep ApiKey | cut -d"'" -f 2)
+RadarrAPIKey=$(curl -sS localhost:7878 | grep ApiKey | cut -d"'" -f 2)
 echo $radarrAPIKey
 
 echo **Get Sonarr APIkey**
@@ -19,6 +19,6 @@ do sleep 5
 done
 
 # SonarrAPIKey=($(grep -oP '(?<=ApiKey>)[^<]+' "$SHARE_LOCATION/htpc/sonarr/config/config.xml"))
-SonarrAPIKey=(curl localhost:8989 | grep ApiKey | cut -d"'" -f 2)
+SonarrAPIKey=$(curl -sS localhost:8989 | grep ApiKey | cut -d"'" -f 2)
 echo $SonarrAPIKey
 
