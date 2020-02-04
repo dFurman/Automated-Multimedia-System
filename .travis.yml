@@ -1,0 +1,12 @@
+dist: bionic
+
+services:
+  - docker
+
+before_install:
+- mkdir /tmp/htpc
+- export SHARE_LOCATION=/tmp/htpc
+- export TIME_ZONE=Asia/Jerusalem
+
+script:
+- install.sh
