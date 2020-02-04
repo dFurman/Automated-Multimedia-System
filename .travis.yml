@@ -9,4 +9,4 @@ before_install:
 - export TIME_ZONE=Asia/Jerusalem
 
 script:
-- install.sh
+- chmod +x ./install.sh && install.sh
