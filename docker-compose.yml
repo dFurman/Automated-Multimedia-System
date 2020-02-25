@@ -71,6 +71,8 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=${TIME_ZONE}
+      - USER=${TRANSMISSION_USER}
+      - PASS=${TRANSMISSION_PASSWORD}
     volumes:
       - ${SHARE_LOCATION}/htpc/transmission/config:/config
       - ${SHARE_LOCATION}/downloads:/downloads
