@@ -1,4 +1,0 @@
-requests
-python-telegram-bot
-IMDbPY
-python-dotenv
