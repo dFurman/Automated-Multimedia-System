@@ -16,7 +16,7 @@ services:
       - 7878:7878
     restart: unless-stopped
   
-  radarr-adder:
+  radarr-addar:
     container_name: radarr-adder
     build: ./radarr-adder/.
     image: furman/radarr-adder
@@ -95,23 +95,6 @@ services:
       - 6767:6767
     restart: unless-stopped
 
-<<<<<<< HEAD
-=======
-  nzbget:
-    image: linuxserver/nzbget
-    container_name: nzbget
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=${TIME_ZONE}
-    volumes:
-      - ./nzbget/config:/config
-      - ${SHARE_LOCATION}/downloads:/downloads
-    ports:
-      - 6789:6789
-    restart: unless-stopped
-    
->>>>>>> 0707ad7ad9bbdf08e91714d0d3b20114e866e75a
   hydra2:
     image: linuxserver/hydra2
     container_name: hydra2
