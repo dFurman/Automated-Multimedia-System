@@ -63,6 +63,23 @@ services:
     ports:
       - 8112:8112
     restart: unless-stopped
+    
+  transmission:
+    image: linuxserver/transmission
+    container_name: transmission
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TIME_ZONE}
+    volumes:
+      - ${SHARE_LOCATION}/htpc/transmission/config:/config
+      - ${SHARE_LOCATION}/downloads:/downloads
+      - ${SHARE_LOCATION}/torrents_to_download:/watch
+    ports:
+      - 9091:9091
+      - 51413:51413
+      - 51413:51413/udp
+    restart: unless-stopped
 
   jackett:
     image: linuxserver/jackett
