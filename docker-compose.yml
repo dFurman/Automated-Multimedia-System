@@ -16,7 +16,7 @@ services:
       - 7878:7878
     restart: unless-stopped
   
-  radarr-addar:
+  radarr-adder:
     container_name: radarr-adder
     image: furman91/radarr-adder
     environment:
