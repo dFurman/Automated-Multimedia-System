@@ -9,7 +9,7 @@ services:
       - TZ=${TIME_ZONE}
       - UMASK_SET=022 #optional
     volumes:
-      - ./radarr/config:/config
+      - ${SHARE_LOCATION}/htpc/radarr/config:/config
       - ${SHARE_LOCATION}/downloads/movies:/movies
       - ${SHARE_LOCATION}/downloads:/downloads
     ports:
@@ -18,8 +18,7 @@ services:
   
   radarr-adder:
     container_name: radarr-adder
-    build: ./radarr-adder/.
-    image: furman/radarr-adder
+    image: furman91/radarr-adder
     environment:
       - RADARR_IP=${RADARR_IP}
       - SONARR_IP=${RADARR_IP}
@@ -40,28 +39,30 @@ services:
       - TZ=${TIME_ZONE}
       - UMASK_SET=022 #optional
     volumes:
-      - ./sonarr/config:/config
+      - ${SHARE_LOCATION}/htpc/sonarr/config:/config
       - ${SHARE_LOCATION}/downloads/tv:/tv
       - ${SHARE_LOCATION}/downloads:/downloads
     ports:
       - 8989:8989
     restart: unless-stopped
 
-  deluge:
-    image: linuxserver/deluge
-    container_name: deluge
+  transmission:
+    image: linuxserver/transmission
+    container_name: transmission
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=${TIME_ZONE}
-      - UMASK_SET=022 #optional
-      - DELUGE_LOGLEVEL=error #optional
+      - USER=${TRANSMISSION_USER}
+      - PASS=${TRANSMISSION_PASSWORD}
     volumes:
-      - ./deluge/config:/config
+      - ${SHARE_LOCATION}/htpc/transmission/config:/config
       - ${SHARE_LOCATION}/downloads:/downloads
-      - ${SHARE_LOCATION}/torrents_to_download:/torrents_to_download
+      - ${SHARE_LOCATION}/torrents_to_download:/watch
     ports:
-      - 8112:8112
+      - 9091:9091
+      - 51413:51413
+      - 51413:51413/udp
     restart: unless-stopped
 
   jackett:
@@ -73,7 +74,7 @@ services:
       - TZ=${TIME_ZONE}
       - RUN_OPTS=run options here #optional
     volumes:
-      - ./jackett/config:/config
+      - ${SHARE_LOCATION}/htpc/jackett/config:/config
       - ${SHARE_LOCATION}/torrents_to_download:/downloads
     ports:
       - 9117:9117
@@ -88,27 +89,13 @@ services:
       - TZ=${TIME_ZONE}
       - UMASK_SET=022 #optional
     volumes:
-      - ./bazarr/config:/config
+      - ${SHARE_LOCATION}/htpc/bazarr/config:/config
       - ${SHARE_LOCATION}/downloads/movies:/movies
       - ${SHARE_LOCATION}/downloads/tv:/tv
     ports:
       - 6767:6767
     restart: unless-stopped
 
-  nzbget:
-    image: linuxserver/nzbget
-    container_name: nzbget
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=${TIME_ZONE}
-    volumes:
-      - ./nzbget/config:/config
-      - ${SHARE_LOCATION}/downloads:/downloads
-    ports:
-      - 6789:6789
-    restart: unless-stopped
-    
   hydra2:
     image: linuxserver/hydra2
     container_name: hydra2
@@ -117,7 +104,7 @@ services:
       - PGID=1000
       - TZ=${TIME_ZONE}
     volumes:
-      - ./hydra2/config:/config
+      - ${SHARE_LOCATION}/htpc/hydra2/config:/config
       - ${SHARE_LOCATION}/downloads:/downloads
     ports:
       - 5076:5076
