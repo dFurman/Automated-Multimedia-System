@@ -1,1 +1,10 @@
-*.env
+**/__pycache__
+**/.classpath
+**/.dockerignore
+**/.env
+**/.git
+**/.gitignore
+**/.project
+**/.settings
+**/.vs
+**/.vscode
